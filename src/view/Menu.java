@@ -1,51 +1,40 @@
 package view;
 
 import java.util.*;
-import pessoas.*;
-import fretes.*;
-
-import util.Situacao;
 
 import javax.swing.JOptionPane;
 
+import classes.Cliente;
+
 public class Menu {
-	static TreeSet<Frete> fretes = new TreeSet<>();
-	
+
 	public static void main(String[] args) {
 		while (true) {
 			switch (montaMenu()) {
-			case 1:// Cadastrar Frete
-				cadastraFrete();
+			case 1:// Cadastrar Cliente
+				cadastraCliente();
 				break;
 				
-			case 2:// Pesquisar Frete usando o nome do cliente
-			    pesquisarFreteClientePorNome();
+			case 2:// Pesquisar cliente usando nome
+			    pesquisarClientePorNome();
 			    break;
 			    
-			case 3:// Pesquisar Frete usando CPF do Cliente
-				pesquisarFreteClientePorCpf();
+			case 3:// Excluir Cliente usando CPF
+				ExcluirClientePorCpf();
 				break;
 				
-			case 4:// Pesquisar Frete usando cidade de origem e destino
-				pesquisarFreteClientePorCidadeOrigemDestino();
-			    break;
-
-			case 5:// Listar todos os Fretes
-				listarFretes();
-			    break;
-
-			case 6:// Listar todos os clientes
+			case 4:// Listar Clientes
 				listarClientes();
-				break;
+			    break;
 				
-			case 7://sair
+			case 5://sair
 				System.exit(0);
 				break;
 			}
 		}
 	}
 
-	public static void cadastraFrete() {
+	public static void cadastraCliente() {
 		
 		try {
 		String nomeCliente = JOptionPane.showInputDialog("Informe o nome do Cliente:");
@@ -53,200 +42,71 @@ public class Menu {
 		String endereco = JOptionPane.showInputDialog("Informe o endereco do Cliente:");
 		String cpfCliente = JOptionPane.showInputDialog("Informe o cpf do Cliente:");
 		Cliente cliente = new Cliente(nomeCliente, endereco,telefone, cpfCliente);
-
-		JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
-		
-		double valorFrete = Double.parseDouble(JOptionPane.showInputDialog("Informe o valor do frete:"));
-		String cidadeOrigem = JOptionPane.showInputDialog("Informe a cidade de Origem:");
-		String cidadeDestino = JOptionPane.showInputDialog("Informe a cidade de Destino:");
-		Frete frete = new Frete(valorFrete, cidadeOrigem, cidadeDestino, cliente);
-		
-		fretes.add(frete);
-		cadastraItens(frete);
-		
-		} catch (NumberFormatException e) {
-	        JOptionPane.showMessageDialog(null, "Erro: Valor do frete inválido. Certifique-se de inserir um número válido.");
-	    } catch (NullPointerException e) {
+		if(cliente.insert() == -1)
+			JOptionPane.showMessageDialog(null, "Erro ao cadastrar cliente!");
+		else
+			JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
+		}
+		 catch (NullPointerException e) {
 	        JOptionPane.showMessageDialog(null, "Erro: Algum campo está vazio. Certifique-se de preencher todos os campos corretamente.");
 	    } catch (Exception e) {
-	        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao cadastrar o frete. Por favor, tente novamente.");
+	        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao cadastrar o cliente. Por favor, tente novamente.");
 	    }
 			
 	}
 	
-	public static void cadastraItens(Frete frete) {
-		try {
-		String descricaoItemFrete = JOptionPane.showInputDialog("Informe a descrição do item:");
-		double pesoItemFrete = Double.parseDouble(JOptionPane.showInputDialog("Informe o peso do item:"));
-		ItemFrete itemFrete = new ItemFrete(descricaoItemFrete,pesoItemFrete, frete);
-		int retorno = frete.adicionarItem(itemFrete);
-		if(retorno == 1) {
-			JOptionPane.showMessageDialog(null, "ItemFrete cadastrado com sucesso!");
-		}else {
-			JOptionPane.showMessageDialog(null, "Item não cadastrado.\nPeso deve estar entre 1 e 100(inclusive)!");
-		}
-		
-	    } catch (NumberFormatException e) {
-	        JOptionPane.showMessageDialog(null, "Erro: Peso do item inválido. Certifique-se de inserir um número válido.");
-	    } catch (NullPointerException e) {
-	        JOptionPane.showMessageDialog(null, "Erro: Algum campo está vazio. Certifique-se de preencher todos os campos corretamente.");
-	    } catch (Exception e) {
-	        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao cadastrar o item do frete. Por favor, tente novamente.");
-	    	}
-		
-		int opcao = Integer.parseInt(JOptionPane.showInputDialog("Deseja cadastrar mais itens? 1 - SIM, 2 - NÃO\nOpção: "));
-		if(opcao == 1) {
-			cadastraItens(frete);
-		} else {
-			montaMenu();
-		}
-	}
 	
-	
-	public static void pesquisarFreteClientePorNome() {
+	public static void pesquisarClientePorNome() {
 		try {
 	    String nomeClientePesquisa = JOptionPane.showInputDialog("Informe o nome do cliente para pesquisar o frete:");
-	    List<Frete> fretesCliente = new ArrayList<>();
+	    Cliente cliente = Cliente.findByName(nomeClientePesquisa);
 	    
-	    for (Frete frete : fretes) {
-	        if (frete.getCliente().getNome().equalsIgnoreCase(nomeClientePesquisa)) {
-	            fretesCliente.add(frete);
-	        }
-	    }
-	    
-	    if (!fretesCliente.isEmpty()) {
+	    if (cliente != null) {
 	        StringBuilder mensagem = new StringBuilder();
-	        mensagem.append("Fretes encontrados para o cliente ").append(nomeClientePesquisa).append(":\n");
-	        for (Frete frete : fretesCliente) {
-	            mensagem.append("Valor do Frete: ").append(frete.getValor()).append("\n");
-	            mensagem.append("Cidade de Origem: ").append(frete.getCidadeOrigem()).append("\n");
-	            mensagem.append("Cidade de Destino: ").append(frete.getCidadeDestino()).append("\n");
-	            mensagem.append("Itens do Frete:\n");
-	            for (ItemFrete itemFrete : frete.getItens()) {
-	                mensagem.append("Descrição: ").append(itemFrete.getDescricao()).append("\n");
-	                mensagem.append("Peso: ").append(itemFrete.getPeso()).append("\n");
-	                mensagem.append("-----\n");
-	            }
+	        mensagem.append("Cliente encontrado ").append(nomeClientePesquisa).append(":\n");
+	            mensagem.append("Nome: ").append(cliente.getNome()).append("\n");
+	            mensagem.append("Endereço: ").append(cliente.getEndereco()).append("\n");
+	            mensagem.append("Telefone: ").append(cliente.getTelefone()).append("\n");
+	            mensagem.append("CPF: ").append(cliente.getCpf()).append("\n");
 	            mensagem.append("-----\n");
-	        }
 	        JOptionPane.showMessageDialog(null, mensagem.toString());
 	    } else {
-	        JOptionPane.showMessageDialog(null, "Nenhum frete encontrado para o cliente " + nomeClientePesquisa);
+	        JOptionPane.showMessageDialog(null, "Nenhum cliente encontrado para o nome " + nomeClientePesquisa);
 	    	}
 		}
 		catch (Exception e) {
-	        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao pesquisar o frete por nome. Por favor, tente novamente.");
+	        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao pesquisar o cliente por nome. Por favor, tente novamente.");
 	    }
 	}
 	
-	
-	public static void pesquisarFreteClientePorCpf() {
+	public static void ExcluirClientePorCpf() {
 		try {
-		String cpfClientePesquisa = JOptionPane.showInputDialog("Informe o CPF do cliente para pesquisar o frete:");
-	    List<Frete> fretesCliente = new ArrayList<>();
+	    String cpfClientePesquisa = JOptionPane.showInputDialog("Informe o CPF do cliente que deseja excluir:");
+	    Cliente cliente = Cliente.findByCpf(cpfClientePesquisa);
 	    
-	    for (Frete frete : fretes) {
-	        if (frete.getCliente().getCpf().equals(cpfClientePesquisa)) {
-	            fretesCliente.add(frete);
-	        }
-	    }
-	    
-	    if (!fretesCliente.isEmpty()) {
-	        StringBuilder mensagem = new StringBuilder();
-	        mensagem.append("Fretes encontrados para o cliente com CPF ").append(cpfClientePesquisa).append(":\n");
-	        for (Frete frete : fretesCliente) {
-	            mensagem.append("Valor do Frete: ").append(frete.getValor()).append("\n");
-	            mensagem.append("Cidade de Origem: ").append(frete.getCidadeOrigem()).append("\n");
-	            mensagem.append("Cidade de Destino: ").append(frete.getCidadeDestino()).append("\n");
-	            mensagem.append("Itens do Frete:\n");
-	            for (ItemFrete itemFrete : frete.getItens()) {
-	                mensagem.append("Descrição: ").append(itemFrete.getDescricao()).append("\n");
-	                mensagem.append("Peso: ").append(itemFrete.getPeso()).append("\n");
-	                mensagem.append("-----\n");
-	            }
-	            mensagem.append("-----\n");
-	        }
-	        JOptionPane.showMessageDialog(null, mensagem.toString());
+	    if (cliente != null) {
+	    	if(cliente.delete() == -1)
+				JOptionPane.showMessageDialog(null, "Erro ao remover cliente!");
+			else
+				JOptionPane.showMessageDialog(null, "Cliente removido com sucesso!");	    	
 	    } else {
-	        JOptionPane.showMessageDialog(null, "Nenhum frete encontrado para o cliente com CPF " + cpfClientePesquisa);
+	        JOptionPane.showMessageDialog(null, "Nenhum cliente encontrado para o cpf " + cpfClientePesquisa);
+	    	}
+		}
+		catch (Exception e) {
+	        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao remover o cliente por cpf. Por favor, tente novamente.");
 	    }
-	    } catch (Exception e) {
-	        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao pesquisar o frete por CPF. Por favor, tente novamente.");
-	    }
-	}
-	
-	public static void pesquisarFreteClientePorCidadeOrigemDestino() {
-	    try {
-		String cidadeOrigemPesquisa = JOptionPane.showInputDialog("Informe a cidade de origem para pesquisar o frete:");
-	    String cidadeDestinoPesquisa = JOptionPane.showInputDialog("Informe a cidade de destino para pesquisar o frete:");
-	    List<Frete> fretesEncontrados = new ArrayList<>();
-	    
-	    for (Frete frete : fretes) {
-	        if (frete.getCidadeOrigem().equalsIgnoreCase(cidadeOrigemPesquisa) &&
-	            frete.getCidadeDestino().equalsIgnoreCase(cidadeDestinoPesquisa)) {
-	            fretesEncontrados.add(frete);
-	        }
-	    }
-	    
-	    if (!fretesEncontrados.isEmpty()) {
-	        StringBuilder mensagem = new StringBuilder();
-	        mensagem.append("Fretes encontrados para a rota: ").append(cidadeOrigemPesquisa).append(" - ").append(cidadeDestinoPesquisa).append(":\n");
-	        for (Frete frete : fretesEncontrados) {
-	            mensagem.append("Valor do Frete: ").append(frete.getValor()).append("\n");
-	            mensagem.append("Cliente: ").append(frete.getCliente().getNome()).append("\n");
-	            mensagem.append("CPF do Cliente: ").append(frete.getCliente().getCpf()).append("\n");
-	            mensagem.append("Itens do Frete:\n");
-	            for (ItemFrete itemFrete : frete.getItens()) {
-	                mensagem.append("Descrição: ").append(itemFrete.getDescricao()).append("\n");
-	                mensagem.append("Peso: ").append(itemFrete.getPeso()).append("\n");
-	                mensagem.append("-----\n");
-	            }
-	            mensagem.append("-----\n");
-	        }
-	        JOptionPane.showMessageDialog(null, mensagem.toString());
-	    } else {
-	        JOptionPane.showMessageDialog(null, "Nenhum frete encontrado para a rota: " + cidadeOrigemPesquisa + " - " + cidadeDestinoPesquisa);
-	    }
-	    } catch (Exception e) {
-	        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao pesquisar o frete por cidade de origem e destino. Por favor, tente novamente.");
-	    }
-	}
-	
-	public static void listarFretes() {
-		try {
-	    if (!fretes.isEmpty()) {
-	        StringBuilder mensagem = new StringBuilder();
-	        mensagem.append("Lista de todos os Fretes:\n");
-	        for (Frete frete : fretes) {
-	            mensagem.append("Valor do Frete: ").append(frete.getValor()).append("\n");
-	            mensagem.append("Cliente: ").append(frete.getCliente().getNome()).append("\n");
-	            mensagem.append("CPF do Cliente: ").append(frete.getCliente().getCpf()).append("\n");
-	            mensagem.append("Peso Total: ").append(frete.getPesoTotal()).append("\n");
-	            mensagem.append("Itens do Frete:\n");
-	            for (ItemFrete itemFrete : frete.getItens()) {
-	                mensagem.append("Descrição: ").append(itemFrete.getDescricao()).append("\n");
-	                mensagem.append("Peso: ").append(itemFrete.getPeso()).append("\n");
-	                mensagem.append("-----\n");
-	            }
-	            mensagem.append("-----\n");
-	        }
-	        JOptionPane.showMessageDialog(null, mensagem.toString());
-	    } else {
-	        JOptionPane.showMessageDialog(null, "Nenhum frete cadastrado.");
-	    }
-		 } catch (Exception e) {
-		        JOptionPane.showMessageDialog(null, "Erro: Ocorreu um erro ao listar os fretes. Por favor, tente novamente.");
-		    }
 	}
 	
 	public static void listarClientes() {
+		List<Cliente> listaClientes = Cliente.listAll();
 		try {
-	    if (!fretes.isEmpty()) {
+	    if (!listaClientes.isEmpty()) {
 	        StringBuilder mensagem = new StringBuilder();
 	        mensagem.append("Lista de todos os Clientes:\n");
 	        mensagem.append("Total de clientes: ").append(Cliente.getTotal()).append("\n");
-	        for (Frete frete : fretes) {
-	            Cliente cliente = frete.getCliente();
+	        for (Cliente cliente : listaClientes) {
+	        	mensagem.append("ID: ").append(cliente.getIdCliente()).append("\n");
 	            mensagem.append("Nome: ").append(cliente.getNome()).append("\n");
 	            mensagem.append("CPF: ").append(cliente.getCpf()).append("\n");
 	            mensagem.append("Telefone: ").append(cliente.getTelefone()).append("\n");

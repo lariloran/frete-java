@@ -2,13 +2,11 @@ package view;
 
 public enum OpcoesMenu {
 
-	 CADASTRAR_FRETE(1, "1 - Cadastrar Frete"),
-	 PESQUISAR_FRETE_NOME_CLIENTE(2, "2 - Pesquisar Frete usando o nome do cliente"),
-	 PESQUISAR_FRETE_CPF_CLIENTE(3, "3 - Pesquisar Frete usando CPF do CLiente"),
-	 PESQUISAR_FRETE_CIDADE_ORIGEM_DESTINO(4, "4 - Pesquisar Frete usando cidade de origem e destino"),
-	 LISTAR_FRETES(5, "5 - Listar todos os Fretes"),
-	 LISTAR_CLIENTES(6, "6 - Listar todos os Clientes cadastrados"),
-	 SAIR(7, "7 - Sair");
+	 CADASTRAR_CLIENTE(1, "1 - Cadastrar cliente em banco de dados"),
+	 PESQUISAR_CLIENTE_NOME(2, "2 - Pesquisar Cliente usando o nome"),
+	 REMOVER_CLIENTE_CPF(3, "3 - Excluir cliente usando CPF"),
+	 LISTAR_CLIENTES(4, "4 - Listar todos os clientes"),
+	 SAIR(5, "5 - Sair");
 
 	
 	  private final int id;
